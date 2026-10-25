@@ -1,0 +1,16 @@
+{
+  "name": "d-connect",
+  "version": "1.0.0",
+  "description": "D-CONNECT - Nen tang nhan tin thoi gian thuc ung dung Socket va giao thuc TCP/IP",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cookie": "^2.0.1",
+    "dotenv": "^18.0.9",
+    "express": "^4.18.2",
+    "mongoose": "^9.11.4",
+    "socket.io": "^4.7.2"
+  }
+}

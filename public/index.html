@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D-CONNECT | Nền tảng nhắn tin thời gian thực</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body class="landing-body">
+  <header class="landing-nav">
+    <div class="logo">
+      <span class="logo-icon">D</span>
+      <span class="logo-text">D-CONNECT</span>
+    </div>
+    <div class="nav-badge">TCP/IP • Socket.IO • MongoDB</div>
+  </header>
+
+  <main class="landing-main">
+    <section class="landing-hero">
+      <h1>Kết nối <span class="gradient-text">dễ dàng <br />An toàn</span> trò chuyện</h1>
+      <p class="hero-sub">
+        D-CONNECT — BÊN NHAU TỪNG PHÚT GIÂY.
+      </p>
+
+      <!-- The hien danh tinh Client tu dong -->
+      <div class="identity-card">
+        <div class="identity-left">
+          <div id="landingAvatar" class="avatar">D</div>
+          <div>
+            <div class="identity-label">Danh tính của bạn:</div>
+            <div id="landingDisplayName" class="identity-name">Đang tải...</div>
+          </div>
+        </div>
+        <button id="openRenameBtn" class="secondary-btn" title="Đổi tên hiển thị">✏️ Đổi tên</button>
+      </div>
+
+      <!-- Khung lua chon phong chat -->
+      <div class="join-card">
+        <h2>Lựa chọn phòng trò chuyện</h2>
+        <p>Chọn phòng chung mặc định hoặc tạo/tham gia phòng riêng bảo mật bằng mã 6 ký tự.</p>
+
+        <div class="room-options-grid">
+          <!-- Lua chon 1: Phong chung -->
+          <div class="room-option-card">
+            <div class="opt-icon">🌐</div>
+            <h3>Phòng chung</h3>
+            <p>Trò chuyện tự do cùng tất cả mọi người đang online. Không cần mã.</p>
+            <button id="joinPublicBtn" class="primary-btn">Vào phòng chung →</button>
+          </div>
+
+          <!-- Lua chon 2: Tao phong rieng -->
+          <div class="room-option-card">
+            <div class="opt-icon">🔒</div>
+            <h3>Tạo phòng riêng</h3>
+            <p>Tự động sinh mã 6 ký tự bảo mật. Chỉ người có mã mới được tham gia.</p>
+            <button id="createPrivateBtn" class="primary-btn">Tạo phòng ngay ✨</button>
+          </div>
+
+          <!-- Lua chon 3: Tham gia bang ma -->
+          <div class="room-option-card">
+            <div class="opt-icon">🔑</div>
+            <h3>Nhập mã phòng</h3>
+            <p>Nhập mã 6 ký tự chữ/số do bạn bè chia sẻ để gia nhập phòng riêng.</p>
+            <div class="code-input-row">
+              <input id="roomCodeInput" type="text" maxlength="6" placeholder="VD: K8M2PQ" autocomplete="off" />
+              <button id="joinPrivateBtn" class="primary-btn">Vào</button>
+            </div>
+            <p id="roomCodeError" class="error-text"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Grid -->
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="f-icon" align="center">⚡</div>
+          <h3 align="center">Realtime</h3>
+          <p>WebSocket trên nền TCP port 3000, truyền tải dữ liệu tức thì không độ trễ.</p>
+        </div>
+        <div class="feature-card">
+          <div class="f-icon" align="center">🛡️</div>
+          <h3 align="center">Phòng riêng cách ly</h3>
+          <p>Mã 6 ký tự ngẫu nhiên an toàn, kiểm soát quyền truy cập chặt chẽ phía server.</p>
+        </div>
+        <div class="feature-card">
+          <div class="f-icon" align="center">💾</div>
+          <h3 align="center">Lưu trữ MongoDB</h3>
+          <p>Lịch sử tin nhắn bền vững, phân trang tải mượt mà và đồng bộ khi kết nối lại.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Doi ten -->
+  <div id="renameModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Đổi tên hiển thị</h3>
+      <p class="modal-desc">Nhập tên mới của bạn (2–20 ký tự). Tin nhắn lịch sử vẫn giữ nguyên tên cũ tại thời điểm gửi.
+      </p>
+      <input id="newUsernameInput" type="text" maxlength="20" placeholder="Nhập tên mới..." autocomplete="off" />
+      <p id="renameError" class="error-text"></p>
+      <div class="modal-actions">
+        <button id="cancelRenameBtn" class="secondary-btn">Hủy</button>
+        <button id="saveRenameBtn" class="primary-btn">Lưu thay đổi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Tao phong rieng -->
+  <div id="createRoomModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Tạo phòng chat riêng</h3>
+      <p class="modal-desc">Nhập tên cho phòng riêng của bạn (hoặc để trống để sử dụng tên mặc định: Phòng riêng #XXXXXX). Hệ thống sẽ tự động sinh mã 6 ký tự bảo mật.</p>
+      <input id="landingCustomRoomName" type="text" maxlength="40" placeholder="Ví dụ: Phòng học tập, Họp dự án..." autocomplete="off" />
+      <div class="modal-actions">
+        <button id="cancelCreateRoomBtn" class="secondary-btn">Hủy</button>
+        <button id="confirmCreateRoomBtn" class="primary-btn">Tạo và vào phòng ngay ✨</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="landing-footer">D-CONNECT • Nền tảng trò chuyện Realtime • Copyright © 2026</footer>
+
+  <script>
+    let currentClient = null;
+
+    const $landingAvatar = document.getElementById('landingAvatar');
+    const $landingDisplayName = document.getElementById('landingDisplayName');
+    const $joinPublicBtn = document.getElementById('joinPublicBtn');
+    const $createPrivateBtn = document.getElementById('createPrivateBtn');
+    const $joinPrivateBtn = document.getElementById('joinPrivateBtn');
+    const $roomCodeInput = document.getElementById('roomCodeInput');
+    const $roomCodeError = document.getElementById('roomCodeError');
+
+    const $renameModal = document.getElementById('renameModal');
+    const $openRenameBtn = document.getElementById('openRenameBtn');
+    const $cancelRenameBtn = document.getElementById('cancelRenameBtn');
+    const $saveRenameBtn = document.getElementById('saveRenameBtn');
+    const $newUsernameInput = document.getElementById('newUsernameInput');
+    const $renameError = document.getElementById('renameError');
+
+    // 1. Khoi tao Session va lay Client Identity tu server
+    async function initSession() {
+      try {
+        const res = await fetch('/api/session');
+        const data = await res.json();
+        if (data.success && data.client) {
+          currentClient = data.client;
+          $landingDisplayName.textContent = currentClient.displayName;
+          $landingAvatar.textContent = currentClient.displayName.charAt(0).toUpperCase();
+          $landingAvatar.style.background = currentClient.avatarColor;
+        } else {
+          $landingDisplayName.textContent = 'Khách';
+        }
+      } catch (err) {
+        console.error('Lỗi lấy session:', err);
+        $landingDisplayName.textContent = 'Khách (Offline)';
+      }
+    }
+
+    const $createRoomModal = document.getElementById('createRoomModal');
+    const $landingCustomRoomName = document.getElementById('landingCustomRoomName');
+    const $cancelCreateRoomBtn = document.getElementById('cancelCreateRoomBtn');
+    const $confirmCreateRoomBtn = document.getElementById('confirmCreateRoomBtn');
+
+    // 2. Chuyen huong vao chat
+    $joinPublicBtn.addEventListener('click', () => {
+      sessionStorage.setItem('dconnect_target_room', 'general');
+      sessionStorage.setItem('dconnect_active_room_id', 'general');
+      sessionStorage.removeItem('dconnect_active_room_code');
+      sessionStorage.removeItem('dconnect_target_code');
+      sessionStorage.removeItem('dconnect_action');
+      window.location.href = 'chat.html';
+    });
+
+    $createPrivateBtn.addEventListener('click', () => {
+      $landingCustomRoomName.value = '';
+      $createRoomModal.classList.add('active');
+      $landingCustomRoomName.focus();
+    });
+
+    $cancelCreateRoomBtn.addEventListener('click', () => {
+      $createRoomModal.classList.remove('active');
+    });
+
+    function doConfirmCreateRoom() {
+      const customName = $landingCustomRoomName.value.trim();
+      sessionStorage.setItem('dconnect_action', 'create_private');
+      if (customName) {
+        sessionStorage.setItem('dconnect_custom_room_name', customName);
+      } else {
+        sessionStorage.removeItem('dconnect_custom_room_name');
+      }
+      sessionStorage.removeItem('dconnect_target_room');
+      sessionStorage.removeItem('dconnect_target_code');
+      sessionStorage.removeItem('dconnect_active_room_id');
+      sessionStorage.removeItem('dconnect_active_room_code');
+      window.location.href = 'chat.html';
+    }
+
+    $confirmCreateRoomBtn.addEventListener('click', doConfirmCreateRoom);
+    $landingCustomRoomName.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') doConfirmCreateRoom();
+    });
+
+    function doJoinPrivate() {
+      const code = $roomCodeInput.value.trim().toUpperCase();
+      if (code.length !== 6) {
+        $roomCodeError.textContent = 'Mã phòng phải gồm đúng 6 ký tự.';
+        return;
+      }
+      $roomCodeError.textContent = '';
+      sessionStorage.setItem('dconnect_target_code', code);
+      sessionStorage.setItem('dconnect_action', 'join_private');
+      sessionStorage.removeItem('dconnect_target_room');
+      sessionStorage.removeItem('dconnect_active_room_id');
+      sessionStorage.removeItem('dconnect_active_room_code');
+      window.location.href = 'chat.html';
+    }
+
+    $joinPrivateBtn.addEventListener('click', doJoinPrivate);
+    $roomCodeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') doJoinPrivate();
+    });
+    $roomCodeInput.addEventListener('input', () => {
+      $roomCodeInput.value = $roomCodeInput.value.toUpperCase();
+      $roomCodeError.textContent = '';
+    });
+
+    // 3. Modal Doi ten
+    $openRenameBtn.addEventListener('click', () => {
+      $newUsernameInput.value = currentClient ? currentClient.displayName : '';
+      $renameError.textContent = '';
+      $renameModal.classList.add('active');
+      $newUsernameInput.focus();
+    });
+
+    $cancelRenameBtn.addEventListener('click', () => {
+      $renameModal.classList.remove('active');
+    });
+
+    $saveRenameBtn.addEventListener('click', async () => {
+      const newName = $newUsernameInput.value.trim();
+      if (newName.length < 2 || newName.length > 20) {
+        $renameError.textContent = 'Tên phải từ 2 đến 20 ký tự.';
+        return;
+      }
+      // Luu ten tam de client.js gui socket doi ten hoac dung Socket truc tiep
+      sessionStorage.setItem('dconnect_pending_rename', newName);
+      if (currentClient) {
+        currentClient.displayName = newName;
+        $landingDisplayName.textContent = newName;
+        $landingAvatar.textContent = newName.charAt(0).toUpperCase();
+      }
+      $renameModal.classList.remove('active');
+    });
+
+    initSession();
+  </script>
+</body>
+
+</html>

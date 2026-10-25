@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D-CONNECT | Phòng trò chuyện</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body class="chat-body">
+  <!-- Toast alert container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Header -->
+  <header class="chat-header">
+    <div class="header-left">
+      <div class="logo small">
+        <span class="logo-icon">D</span>
+        <span class="logo-text">D-CONNECT</span>
+      </div>
+
+      <!-- Room status badge -->
+      <div class="current-room-badge" id="currentRoomBadge">
+        <span class="room-icon" id="roomIcon">🌐</span>
+        <span class="room-name" id="roomNameDisplay">Đang kết nối...</span>
+        <div id="privateCodeBadge" class="private-code-box" style="display: none;">
+          <span class="code-label">MÃ:</span>
+          <span id="roomCodeText" class="code-val">------</span>
+          <button id="copyCodeBtn" class="copy-btn" title="Sao chép mã phòng">📋 Sao chép</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-info">
+      <span id="onlineCount" class="online-badge">● 0 online</span>
+      <div class="user-pill" id="userPill">
+        <div id="headerAvatar" class="avatar-small">D</div>
+        <span id="myName" class="my-name">Khách</span>
+        <button id="renameBtn" class="pill-btn" title="Đổi tên hiển thị">✏️</button>
+      </div>
+      <button id="switchRoomBtn" class="action-btn" title="Đổi sang phòng khác">🔄 Đổi phòng</button>
+      <button id="leaveBtn" class="leave-btn" title="Rời phòng">Rời đi</button>
+    </div>
+  </header>
+
+  <!-- Layout Chat -->
+  <div class="chat-layout">
+    <!-- Sidebar danh sach thanh vien online trong phong -->
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <h3>Thành viên online</h3>
+        <span id="sidebarCount" class="count-pill">0</span>
+      </div>
+      <input id="searchInput" type="text" placeholder="Tìm thành viên..." autocomplete="off" />
+      <ul id="userList" class="user-list"></ul>
+      <div class="sidebar-foot">
+        <div>🔒 TCP Socket & Socket.IO</div>
+      </div>
+    </aside>
+
+    <!-- Main Chat Content -->
+    <main class="chat-main">
+      <!-- Nut tai them tin nhan cu (Phan trang cursor-based) -->
+      <div id="loadMoreContainer" class="load-more-bar" style="display: none;">
+        <button id="loadMoreBtn" class="load-more-btn">
+          <span id="loadMoreSpinner" class="spinner" style="display: none;"></span>
+          <span>⬆ Tải thêm tin nhắn cũ</span>
+        </button>
+      </div>
+
+      <div id="messages" class="messages"></div>
+
+      <!-- Typing Indicator -->
+      <div id="typingIndicator" class="typing-indicator" aria-live="polite"></div>
+
+      <!-- Khung soan tin -->
+      <div class="composer">
+        <input id="msgInput" type="text" maxlength="1000" placeholder="Nhập tin nhắn... (Enter để gửi)"
+          autocomplete="off" />
+        <button id="sendBtn">Gửi ➤</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Doi ten -->
+  <div id="renameModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Đổi tên hiển thị</h3>
+      <p class="modal-desc">Nhập tên mới (2–20 ký tự). Danh sách trực tuyến và tin nhắn mới sẽ cập nhật tên này.</p>
+      <input id="newUsernameInput" type="text" maxlength="20" placeholder="Tên hiển thị mới..." autocomplete="off" />
+      <p id="renameError" class="error-text"></p>
+      <div class="modal-actions">
+        <button id="cancelRenameBtn" class="secondary-btn">Hủy</button>
+        <button id="saveRenameBtn" class="primary-btn">Lưu thay đổi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Chon / Doi phong chat -->
+  <div id="roomModal" class="modal-overlay">
+    <div class="modal-card room-modal-card">
+      <h3>Lựa chọn phòng trò chuyện</h3>
+      <p class="modal-desc">Chuyển sang phòng chung hoặc tạo/gia nhập phòng riêng bảo mật bằng mã 6 ký tự.</p>
+
+      <div class="modal-tabs">
+        <button id="tabPublic" class="tab-btn active">🌐 Phòng chung</button>
+        <button id="tabCreate" class="tab-btn">🔒 Tạo phòng riêng</button>
+        <button id="tabJoin" class="tab-btn">🔑 Nhập mã phòng</button>
+      </div>
+
+      <!-- Tab Content: Phong chung -->
+      <div id="tabContentPublic" class="tab-panel active">
+        <p>Tham gia phòng chat chung với mọi người.</p>
+        <button id="modalJoinPublicBtn" class="primary-btn full-w">Vào phòng chung →</button>
+      </div>
+
+      <!-- Tab Content: Tao phong rieng -->
+      <div id="tabContentCreate" class="tab-panel">
+        <p>Hệ thống sẽ sinh ngẫu nhiên mã 6 ký tự bảo mật. Bạn có thể chia sẻ mã này cho người khác.</p>
+        <input id="customRoomNameInput" type="text" maxlength="40" placeholder="Tên phòng (tùy chọn)..." />
+        <button id="modalCreatePrivateBtn" class="primary-btn full-w">Tạo và vào phòng ngay ✨</button>
+      </div>
+
+      <!-- Tab Content: Nhap ma -->
+      <div id="tabContentJoin" class="tab-panel">
+        <p>Nhập mã 6 ký tự chữ và số để gia nhập phòng riêng của bạn bè.</p>
+        <div class="code-input-row">
+          <input id="modalRoomCodeInput" type="text" maxlength="6" placeholder="VD: K8M2PQ" autocomplete="off" />
+          <button id="modalJoinPrivateBtn" class="primary-btn">Gia nhập</button>
+        </div>
+        <p id="modalCodeError" class="error-text"></p>
+      </div>
+
+      <div class="modal-actions">
+        <button id="closeRoomModalBtn" class="secondary-btn">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/client.js"></script>
+</body>
+
+</html>
